@@ -1,12 +1,7 @@
 $input a_position, a_color0
 $output v_color0
 
-/*
- * Copyright 2011-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
- */
-
-#include "../common/common.sh"
+#include <bgfx_shader.sh>
 
 void main()
 {

@@ -4,6 +4,7 @@
 
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
+#include <bgfx/embedded_shader.h>
 
 #include <GLFW/glfw3.h>
 
@@ -25,9 +26,21 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <bx/math.h>
+
 #include <stdexcept>
 #include <iostream>
 #include <cstdio>
+
+// Compiled shaders
+#include <generated/shaders/bgfx-test/all.h>
+
+static const bgfx::EmbeddedShader s_embeddedShaders[] =
+{
+	BGFX_EMBEDDED_SHADER(vs_cubes),
+	BGFX_EMBEDDED_SHADER(fs_cubes),
+	BGFX_EMBEDDED_SHADER_END()
+};
 
 struct PosColorVertex
 {
@@ -69,21 +82,6 @@ static void glfw_errorCallback(int error, const char *description) {
 	fmt::print("GLFW error {}: {}\n", error, description);
 }
 
-bgfx::ShaderHandle loadShader(const std::string& fileName) {
-    FILE *file = fopen(fmt::format("./content/shaders/{}", fileName).c_str(), "rb");
-
-    fseek(file, 0, SEEK_END);
-    long fileSize = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    const bgfx::Memory *mem = bgfx::alloc(fileSize + 1);
-    fread(mem->data, 1, fileSize, file);
-    mem->data[mem->size - 1] = '\0';
-    fclose(file);
-
-    return bgfx::createShader(mem);
-}
-
 int main(int argc, char* argv[]) {
 	int width = 1024;
 	int height = 768;
@@ -121,8 +119,15 @@ int main(int argc, char* argv[]) {
 
 	// Set view 0 to the same dimensions as the window and to clear the color buffer.
 	const bgfx::ViewId kClearView = 0;
-	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
+	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
 	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+
+	// Setup camera
+	float view[16];
+	bx::mtxLookAt(view, {0.0f, 0.0f, -5.0f}, {0.0f, 0.0f,  0.0f}); // Am too lazy to fix it for glm
+
+	auto proj = glm::perspective(glm::radians(60.f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
+	bgfx::setViewTransform(0, view, glm::value_ptr(proj));
 
 	// Setup
 	bgfx::VertexLayout pcvDecl;
@@ -135,27 +140,20 @@ int main(int argc, char* argv[]) {
     bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
 	// Load shaders
-	bgfx::ShaderHandle vsh = loadShader("vs_cubes.bin");
-    bgfx::ShaderHandle fsh = loadShader("fs_cubes.bin");
+	bgfx::RendererType::Enum type = bgfx::getRendererType();
+	bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_cubes");
+	bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_cubes");
     bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
-
-	// Setup camera
-	glm::vec3 position = {1.0f, 1.0f, -2.0f};
-	glm::vec3 target = {0.0f, 0.0f, 0.0f};
-	glm::vec3 up = {0.f, 1.f, 0.f};
-
-	auto view = glm::lookAt(position, target, up);
-	auto proj = glm::perspective(glm::radians(60.f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
+	if(program.idx == 0) throw std::runtime_error("Failed to initialize shader program");
 
 	float i = 0;
-
-	// Start program
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
 		// Handle window resize.
 		int oldWidth = width, oldHeight = height;
 		glfwGetWindowSize(window, &width, &height);
+
 		if (width != oldWidth || height != oldHeight) {
 			bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
 			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
@@ -165,15 +163,13 @@ int main(int argc, char* argv[]) {
 		bgfx::touch(kClearView);
 
 		// DRAW
-		bgfx::setViewTransform(0, glm::value_ptr(view), glm::value_ptr(proj));
-
         bgfx::setVertexBuffer(0, vbh);
         bgfx::setIndexBuffer(ibh);
 
 		// ROTATE CUBEEEE
-		/*float mtx[16];
+		float mtx[16];
 		bx::mtxRotateXY(mtx, i * 0.01f, i * 0.01f);
-		bgfx::setTransform(mtx);*/
+		bgfx::setTransform(mtx);
 
 		// Submit shader
         bgfx::submit(0, program);
