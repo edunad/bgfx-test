@@ -2,8 +2,6 @@
 	#include <windows.h>
 #endif
 
-#include <bx/math.h>
-
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bgfx/embedded_shader.h>
@@ -16,7 +14,7 @@
 #endif // GLFW_VERSION_MINOR < 2
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#	if USE_WAYLAND
+#	if ENTRY_CONFIG_USE_WAYLAND
 #		include <wayland-egl.h>
 #		define GLFW_EXPOSE_NATIVE_WAYLAND
 #	else
@@ -30,22 +28,13 @@
 #	define GLFW_EXPOSE_NATIVE_WIN32
 #	define GLFW_EXPOSE_NATIVE_WGL
 #endif //
-
 #include <GLFW/glfw3native.h>
 
-#include <fmt/printf.h>
-#include <magic_enum.hpp>
 
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <bx/math.h>
+#include <fmt/printf.h>
 
 #include <stdexcept>
-#include <iostream>
-#include <cstdio>
 
 // Compiled shaders
 #include <generated/shaders/bgfx-test/all.h>
@@ -197,8 +186,10 @@ int main(int argc, char* argv[]) {
 	float view[16];
 	bx::mtxLookAt(view, {0.0f, 0.0f, -5.0f}, {0.0f, 0.0f,  0.0f}); // Am too lazy to fix it for glm
 
-	auto proj = glm::perspective(glm::radians(60.f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
-	bgfx::setViewTransform(0, view, glm::value_ptr(proj));
+    float proj[16];
+	bx::mtxProj(proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+
+	bgfx::setViewTransform(0, view, proj);
 
 	// Setup
 	bgfx::VertexLayout pcvDecl;

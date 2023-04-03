@@ -58,8 +58,6 @@ include("cmake/utils.cmake")
 
 find_package(fmt REQUIRED)
 find_package(glfw3 REQUIRED)
-find_package(magic_enum REQUIRED)
-find_package(glm REQUIRED)
 
 add_shaders_directory("content/shaders" SHADERS_TARGET_NAME)
 message("SHADERS: ${SHADERS_TARGET_NAME}")
@@ -92,8 +90,6 @@ target_link_libraries(${output_target} PUBLIC "${SHADERS_TARGET_NAME}" PRIVATE
 	glfw
 	bgfx
 	bx
-	glm::glm
-	magic_enum::magic_enum
 	${EXTRA_LIBS}
 )
 

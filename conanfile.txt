@@ -1,8 +1,6 @@
 [requires]
 fmt/9.1.0
 glfw/3.3.8
-magic_enum/0.8.2
-glm/cci.20230113
 
 [generators]
 CMakeDeps
