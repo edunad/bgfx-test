@@ -59,7 +59,6 @@ find_package(glfw3 REQUIRED)
 find_package(magic_enum REQUIRED)
 find_package(glm REQUIRED)
 
-
 add_shaders_directory("content/shaders" SHADERS_TARGET_NAME)
 message("SHADERS: ${SHADERS_TARGET_NAME}")
 
@@ -96,10 +95,15 @@ target_link_libraries(${output_target} PUBLIC "${SHADERS_TARGET_NAME}" PRIVATE
 	${EXTRA_LIBS}
 )
 
-if(USE_WAYLAND AND LINUX)
-	message("WAYLAND set!")
+if(NOT WIN32)
+	if(USE_WAYLAND)
+		set(EXTRA_SET USE_WAYLAND)
+		message("WAYLAND set!")
+	endif()
+
 	target_compile_definitions(${output_target} PUBLIC
-		USE_WAYLAND
+		__NX__
+		${EXTRA_SET}
 	)
 endif()
 
