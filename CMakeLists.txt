@@ -5,6 +5,7 @@ project ("bgfx_test" VERSION "0.0.1")
 
 # Fix cmake paths
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(PREPEND CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
 list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 # ---
@@ -28,7 +29,7 @@ set(BGFX_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(BGFX_CUSTOM_TARGETS OFF CACHE INTERNAL "")
 
 if(NOT WIN32)
-	set(EXTRA_LIBS pthread GL X11 dl rt wayland-egl)
+	set(EXTRA_LIBS pthread GL X11)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
 	set(BGFX_USE_WAYLAND ON CACHE INTERNAL "")
@@ -58,6 +59,10 @@ include("cmake/utils.cmake")
 
 find_package(fmt REQUIRED)
 find_package(glfw3 REQUIRED)
+
+if(NOT WIN32)
+	find_package(wayland REQUIRED)
+endif()
 
 add_shaders_directory("content/shaders" SHADERS_TARGET_NAME)
 message("SHADERS: ${SHADERS_TARGET_NAME}")
@@ -90,6 +95,7 @@ target_link_libraries(${output_target} PUBLIC "${SHADERS_TARGET_NAME}" PRIVATE
 	glfw
 	bgfx
 	bx
+	wayland
 	${EXTRA_LIBS}
 )
 
