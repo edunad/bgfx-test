@@ -28,7 +28,7 @@ set(BGFX_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(BGFX_CUSTOM_TARGETS OFF CACHE INTERNAL "")
 
 if(NOT WIN32)
-	set(EXTRA_LIBS pthread GL X11 dl rt)
+	set(EXTRA_LIBS pthread GL X11 dl rt wayland-egl)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 else()
 	# Ignore warnings about missing pdb

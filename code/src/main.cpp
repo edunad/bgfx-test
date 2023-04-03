@@ -26,6 +26,7 @@
 #	define GLFW_EXPOSE_NATIVE_WIN32
 #	define GLFW_EXPOSE_NATIVE_WGL
 #endif //
+
 #include <GLFW/glfw3native.h>
 
 #include <fmt/printf.h>
@@ -137,6 +138,22 @@ static void* glfwNativeWindowHandle(GLFWwindow* _window) {
 #	endif // BX_PLATFORM_
 }
 
+static void glfwDestroyWindowImpl(GLFWwindow *_window){
+if(!_window) return;
+	#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+		#if USE_WAYLAND
+			wl_egl_window *win_impl = (wl_egl_window*)glfwGetWindowUserPointer(_window);
+			if(win_impl)
+			{
+				glfwSetWindowUserPointer(_window, nullptr);
+				wl_egl_window_destroy(win_impl);
+			}
+		#endif
+	#endif
+
+	glfwDestroyWindow(_window);
+}
+
 int main(int argc, char* argv[]) {
 	int width = 1024;
 	int height = 768;
@@ -230,6 +247,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	bgfx::shutdown();
+
+	glfwDestroyWindowImpl(window);
 	glfwTerminate();
 
 	return 0;
