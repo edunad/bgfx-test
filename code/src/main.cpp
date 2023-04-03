@@ -14,7 +14,7 @@
 #endif // GLFW_VERSION_MINOR < 2
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#	if ENTRY_CONFIG_USE_WAYLAND
+#	if USE_WAYLAND
 #		include <wayland-egl.h>
 #		define GLFW_EXPOSE_NATIVE_WAYLAND
 #	else
@@ -29,7 +29,6 @@
 #	define GLFW_EXPOSE_NATIVE_WGL
 #endif //
 #include <GLFW/glfw3native.h>
-
 
 #include <bx/math.h>
 #include <fmt/printf.h>
@@ -109,20 +108,20 @@ static void glfw_errorCallback(int error, const char *description) {
 static void* glfwNativeWindowHandle(GLFWwindow* _window) {
 #	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 # 		if USE_WAYLAND
-		wl_egl_window *win_impl = (wl_egl_window*)glfwGetWindowUserPointer(_window);
-		if(!win_impl)
-		{
-			int width, height;
-			glfwGetWindowSize(_window, &width, &height);
-			struct wl_surface* surface = (struct wl_surface*)glfwGetWaylandWindow(_window);
-			if(!surface)
-				return nullptr;
-			win_impl = wl_egl_window_create(surface, width, height);
-			glfwSetWindowUserPointer(_window, (void*)(uintptr_t)win_impl);
-		}
-		return (void*)(uintptr_t)win_impl;
+			wl_egl_window *win_impl = (wl_egl_window*)glfwGetWindowUserPointer(_window);
+			if(!win_impl)
+			{
+				int width, height;
+				glfwGetWindowSize(_window, &width, &height);
+				struct wl_surface* surface = (struct wl_surface*)glfwGetWaylandWindow(_window);
+				if(!surface)
+					return nullptr;
+				win_impl = wl_egl_window_create(surface, width, height);
+				glfwSetWindowUserPointer(_window, (void*)(uintptr_t)win_impl);
+			}
+			return (void*)(uintptr_t)win_impl;
 #		else
-		return (void*)(uintptr_t)glfwGetX11Window(_window);
+			return (void*)(uintptr_t)glfwGetX11Window(_window);
 #		endif
 #	elif BX_PLATFORM_OSX
 		return glfwGetCocoaWindow(_window);
