@@ -28,11 +28,9 @@ set(BGFX_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(BGFX_CUSTOM_TARGETS OFF CACHE INTERNAL "")
 
 if(NOT WIN32)
-	set(EXTRA_LIBS pthread)
+	set(EXTRA_LIBS pthread GL X11 dl rt)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 else()
-	set(EXTRA_LIBS opengl32)
-
 	# Ignore warnings about missing pdb
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099")
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4099")
@@ -97,6 +95,13 @@ target_link_libraries(${output_target} PUBLIC "${SHADERS_TARGET_NAME}" PRIVATE
 	magic_enum::magic_enum
 	${EXTRA_LIBS}
 )
+
+if(USE_WAYLAND AND LINUX)
+	message("WAYLAND set!")
+	target_compile_definitions(${output_target} PUBLIC
+		USE_WAYLAND
+	)
+endif()
 
 if (WIN32)
 		add_custom_command(

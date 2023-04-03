@@ -2,18 +2,21 @@
 	#include <windows.h>
 #endif
 
+#include <bx/bx.h>
+#include <bx/math.h>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bgfx/embedded_shader.h>
 
 #include <GLFW/glfw3.h>
 
-#if _WIN32
-#define GLFW_EXPOSE_NATIVE_WIN32
-#else
+#if BX_PLATFORM_LINUX
 #define GLFW_EXPOSE_NATIVE_X11
+#elif BX_PLATFORM_WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#elif BX_PLATFORM_OSX
+#define GLFW_EXPOSE_NATIVE_COCOA
 #endif
-
 #include <GLFW/glfw3native.h>
 
 #include <fmt/printf.h>
@@ -25,8 +28,6 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-#include <bx/math.h>
 
 #include <stdexcept>
 #include <iostream>
@@ -82,6 +83,31 @@ static void glfw_errorCallback(int error, const char *description) {
 	fmt::print("GLFW error {}: {}\n", error, description);
 }
 
+static void* glfwNativeWindowHandle(GLFWwindow* _window) {
+#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+# 		if USE_WAYLAND
+		wl_egl_window *win_impl = (wl_egl_window*)glfwGetWindowUserPointer(_window);
+		if(!win_impl)
+		{
+			int width, height;
+			glfwGetWindowSize(_window, &width, &height);
+			struct wl_surface* surface = (struct wl_surface*)glfwGetWaylandWindow(_window);
+			if(!surface)
+				return nullptr;
+			win_impl = wl_egl_window_create(surface, width, height);
+			glfwSetWindowUserPointer(_window, (void*)(uintptr_t)win_impl);
+		}
+		return (void*)(uintptr_t)win_impl;
+#		else
+		return (void*)(uintptr_t)glfwGetX11Window(_window);
+#		endif
+#	elif BX_PLATFORM_OSX
+		return glfwGetCocoaWindow(_window);
+#	elif BX_PLATFORM_WINDOWS
+		return glfwGetWin32Window(_window);
+#	endif // BX_PLATFORM_
+}
+
 int main(int argc, char* argv[]) {
 	int width = 1024;
 	int height = 768;
@@ -106,12 +132,7 @@ int main(int argc, char* argv[]) {
 	init.resolution.width = (uint32_t)width;
 	init.resolution.height = (uint32_t)height;
 	init.resolution.reset = BGFX_RESET_VSYNC;
-	#if _WIN32
-		init.platformData.nwh = glfwGetWin32Window(window);
-	#else
-		init.platformData.ndt = glfwGetX11Display();
-		init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(window);
-	#endif
+	init.platformData.nwh = glfwNativeWindowHandle(window);
 
 	if (!bgfx::init(init)) return 1;
 
