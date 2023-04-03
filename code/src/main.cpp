@@ -11,6 +11,10 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#if GLFW_VERSION_MINOR < 2
+#	error "GLFW 3.2 or later is required"
+#endif // GLFW_VERSION_MINOR < 2
+
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 #	if USE_WAYLAND
 #		include <wayland-egl.h>

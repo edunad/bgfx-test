@@ -30,6 +30,8 @@ set(BGFX_CUSTOM_TARGETS OFF CACHE INTERNAL "")
 if(NOT WIN32)
 	set(EXTRA_LIBS pthread GL X11 dl rt wayland-egl)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
+
+	set(BGFX_USE_WAYLAND ON CACHE INTERNAL "")
 else()
 	# Ignore warnings about missing pdb
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099")
