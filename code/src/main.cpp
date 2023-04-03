@@ -36,10 +36,20 @@
 // Compiled shaders
 #include <generated/shaders/bgfx-test/all.h>
 
+#define BGFX_EMBEDDED_SHADER_VULKAN(_name)                                                 \
+	{                                                                                      \
+		#_name,                                                                            \
+		{                                                                                  \
+			BGFX_EMBEDDED_SHADER_SPIRV(bgfx::RendererType::Vulkan,     _name)              \
+			{ bgfx::RendererType::Noop,  (const uint8_t*)"VSH\x5\x0\x0\x0\x0\x0\x0", 10 }, \
+			{ bgfx::RendererType::Count, NULL, 0 }                                         \
+		}                                                                                  \
+	}
+
 static const bgfx::EmbeddedShader s_embeddedShaders[] =
 {
-	BGFX_EMBEDDED_SHADER(vs_cubes),
-	BGFX_EMBEDDED_SHADER(fs_cubes),
+	BGFX_EMBEDDED_SHADER_VULKAN(vs_cubes),
+	BGFX_EMBEDDED_SHADER_VULKAN(fs_cubes),
 	BGFX_EMBEDDED_SHADER_END()
 };
 
