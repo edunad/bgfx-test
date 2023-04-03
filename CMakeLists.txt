@@ -95,6 +95,13 @@ target_link_libraries(${output_target} PUBLIC "${SHADERS_TARGET_NAME}" PRIVATE
 	${EXTRA_LIBS}
 )
 
+if(NOT WIN32 AND USE_WAYLAND)
+	message("WAYLAND set!")
+	target_compile_definitions(${output_target} PUBLIC
+		USE_WAYLAND
+	)
+endif()
+
 if (WIN32)
 		add_custom_command(
 			TARGET ${output_target}

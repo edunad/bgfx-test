@@ -8,15 +8,24 @@
 #include <bgfx/platform.h>
 #include <bgfx/embedded_shader.h>
 
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-#if BX_PLATFORM_LINUX
-#define GLFW_EXPOSE_NATIVE_X11
-#elif BX_PLATFORM_WINDOWS
-#define GLFW_EXPOSE_NATIVE_WIN32
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#	if USE_WAYLAND
+#		include <wayland-egl.h>
+#		define GLFW_EXPOSE_NATIVE_WAYLAND
+#	else
+#		define GLFW_EXPOSE_NATIVE_X11
+#		define GLFW_EXPOSE_NATIVE_GLX
+#	endif
 #elif BX_PLATFORM_OSX
-#define GLFW_EXPOSE_NATIVE_COCOA
-#endif
+#	define GLFW_EXPOSE_NATIVE_COCOA
+#	define GLFW_EXPOSE_NATIVE_NSGL
+#elif BX_PLATFORM_WINDOWS
+#	define GLFW_EXPOSE_NATIVE_WIN32
+#	define GLFW_EXPOSE_NATIVE_WGL
+#endif //
 #include <GLFW/glfw3native.h>
 
 #include <fmt/printf.h>
@@ -104,13 +113,28 @@ static void glfw_errorCallback(int error, const char *description) {
 }
 
 static void* glfwNativeWindowHandle(GLFWwindow* _window) {
-	#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-			return (void*)(uintptr_t)glfwGetX11Window(_window);
-	#elif BX_PLATFORM_OSX
-			return glfwGetCocoaWindow(_window);
-	#elif BX_PLATFORM_WINDOWS
-			return glfwGetWin32Window(_window);
-	#endif
+#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+# 		if USE_WAYLAND
+		wl_egl_window *win_impl = (wl_egl_window*)glfwGetWindowUserPointer(_window);
+		if(!win_impl)
+		{
+			int width, height;
+			glfwGetWindowSize(_window, &width, &height);
+			struct wl_surface* surface = (struct wl_surface*)glfwGetWaylandWindow(_window);
+			if(!surface)
+				return nullptr;
+			win_impl = wl_egl_window_create(surface, width, height);
+			glfwSetWindowUserPointer(_window, (void*)(uintptr_t)win_impl);
+		}
+		return (void*)(uintptr_t)win_impl;
+#		else
+		return (void*)(uintptr_t)glfwGetX11Window(_window);
+#		endif
+#	elif BX_PLATFORM_OSX
+		return glfwGetCocoaWindow(_window);
+#	elif BX_PLATFORM_WINDOWS
+		return glfwGetWin32Window(_window);
+#	endif // BX_PLATFORM_
 }
 
 int main(int argc, char* argv[]) {
@@ -136,6 +160,9 @@ int main(int argc, char* argv[]) {
 	init.resolution.reset = BGFX_RESET_VSYNC;
 	init.platformData.nwh = glfwNativeWindowHandle(window);
 
+	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
+	// Most graphics APIs must be used on the same thread that created the window.
+	bgfx::renderFrame();
 	if (!bgfx::init(init)) return 1;
 
 	bgfx::setDebug(BGFX_DEBUG_STATS); // Enable debug.
