@@ -24,7 +24,12 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
     file(MAKE_DIRECTORY "${SHADERS_OUT_DIR}")
 
     # 120|300_es|spirv|metal|s_3_0|s_4_0|s_5_0
-    set(PROFILES 120 300_es spirv s_3_0 s_4_0 s_5_0)
+    set(PROFILES 120 300_es spirv)
+
+	if(WIN32)
+		list(APPEND PROFILES s_3_0 s_4_0 s_5_0)
+	endif()
+
     if(APPLE)
         list(APPEND PROFILES metal)
     endif()

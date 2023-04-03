@@ -2,9 +2,8 @@
 	#include <windows.h>
 #endif
 
-#include <bx/bx.h>
 #include <bx/math.h>
-#include <bx/platform.h>
+
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
 #include <bgfx/embedded_shader.h>

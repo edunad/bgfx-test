@@ -95,15 +95,10 @@ target_link_libraries(${output_target} PUBLIC "${SHADERS_TARGET_NAME}" PRIVATE
 	${EXTRA_LIBS}
 )
 
-if(NOT WIN32)
-	if(USE_WAYLAND)
-		set(EXTRA_SET USE_WAYLAND)
-		message("WAYLAND set!")
-	endif()
-
+if(NOT WIN32 AND USE_WAYLAND)
+	message("WAYLAND set!")
 	target_compile_definitions(${output_target} PUBLIC
-		__NX__
-		${EXTRA_SET}
+		USE_WAYLAND
 	)
 endif()
 
