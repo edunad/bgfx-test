@@ -31,6 +31,7 @@ if(NOT WIN32)
 	set(EXTRA_LIBS pthread GL X11 Wayland)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
+	set(GLFW_BUILD_WAYLAND ON CACHE INTERNAL "")
 	set(BGFX_USE_WAYLAND ON CACHE INTERNAL "")
 else()
 	# Ignore warnings about missing pdb

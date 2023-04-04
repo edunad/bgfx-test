@@ -107,7 +107,7 @@ static void glfw_errorCallback(int error, const char *description) {
 
 static void* glfwNativeWindowHandle(GLFWwindow* _window) {
 #	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-# 		if USE_WAYLAND
+# 		if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
 			wl_egl_window *win_impl = (wl_egl_window*)glfwGetWindowUserPointer(_window);
 			if(!win_impl)
 			{
@@ -134,7 +134,7 @@ static void glfwDestroyWindowImpl(GLFWwindow *_window){
 	if(!_window) return;
 
 	#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-		#if USE_WAYLAND
+		#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
 			wl_egl_window *win_impl = (wl_egl_window*)glfwGetWindowUserPointer(_window);
 			if(win_impl)
 			{
@@ -149,11 +149,11 @@ static void glfwDestroyWindowImpl(GLFWwindow *_window){
 
 void* getNativeDisplayHandle() {
 #	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#		if USE_WAYLAND
+#		if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
 			return glfwGetWaylandDisplay();
 #		else
 			return glfwGetX11Display();
-#		endif // ENTRY_CONFIG_USE_WAYLAND
+#		endif
 #	else
 		return NULL;
 #	endif // BX_PLATFORM_*
