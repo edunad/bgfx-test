@@ -131,7 +131,8 @@ static void* glfwNativeWindowHandle(GLFWwindow* _window) {
 }
 
 static void glfwDestroyWindowImpl(GLFWwindow *_window){
-if(!_window) return;
+	if(!_window) return;
+
 	#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 		#if USE_WAYLAND
 			wl_egl_window *win_impl = (wl_egl_window*)glfwGetWindowUserPointer(_window);
@@ -144,6 +145,18 @@ if(!_window) return;
 	#endif
 
 	glfwDestroyWindow(_window);
+}
+
+void* getNativeDisplayHandle() {
+#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#		if USE_WAYLAND
+			return glfwGetWaylandDisplay();
+#		else
+			return glfwGetX11Display();
+#		endif // ENTRY_CONFIG_USE_WAYLAND
+#	else
+		return NULL;
+#	endif // BX_PLATFORM_*
 }
 
 int main(int argc, char* argv[]) {
@@ -168,6 +181,8 @@ int main(int argc, char* argv[]) {
 	init.resolution.height = (uint32_t)height;
 	init.resolution.reset = BGFX_RESET_VSYNC;
 	init.platformData.nwh = glfwNativeWindowHandle(window);
+	init.platformData.ndt = getNativeDisplayHandle();
+
 
 	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
 	// Most graphics APIs must be used on the same thread that created the window.
@@ -242,7 +257,7 @@ int main(int argc, char* argv[]) {
 
 	bgfx::shutdown();
 
-	glfwDestroyWindowImpl(window);
+	//glfwDestroyWindowImpl(window);
 	glfwTerminate();
 
 	return 0;

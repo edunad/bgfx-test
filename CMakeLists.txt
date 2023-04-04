@@ -28,7 +28,7 @@ set(BGFX_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(BGFX_CUSTOM_TARGETS OFF CACHE INTERNAL "")
 
 if(NOT WIN32)
-	set(EXTRA_LIBS pthread GL X11)
+	set(EXTRA_LIBS pthread GL X11 Wayland)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
 	set(BGFX_USE_WAYLAND ON CACHE INTERNAL "")
@@ -94,7 +94,6 @@ target_link_libraries(${output_target} PUBLIC "${SHADERS_TARGET_NAME}" PRIVATE
 	glfw
 	bgfx
 	bx
-	wayland
 	${EXTRA_LIBS}
 )
 
