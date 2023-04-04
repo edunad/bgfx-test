@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
 
 	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
 	// Most graphics APIs must be used on the same thread that created the window.
-	bgfx::renderFrame();
+	//bgfx::renderFrame();
 	if (!bgfx::init(init)) return 1;
 
 	bgfx::setDebug(BGFX_DEBUG_STATS); // Enable debug.
