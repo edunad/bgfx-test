@@ -184,6 +184,11 @@ int main(int argc, char* argv[]) {
 	GLFWwindow *window = glfwCreateWindow(width, height, "test", nullptr, nullptr);
 	if (!window) return 1;
 
+
+	/*bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
+	uint8_t num = bgfx::getSupportedRenderers(BX_COUNTOF(supportedRenderers), supportedRenderers);
+	bgfx::getRendererName(supportedRenderers[ii]);*/
+
 	bgfx::Init init;
 	init.type = bgfx::RendererType::Vulkan;
 	init.resolution.width = (uint32_t)width;
@@ -196,8 +201,8 @@ int main(int argc, char* argv[]) {
 	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
 	// Most graphics APIs must be used on the same thread that created the window.
 	//bgfx::renderFrame();
-	if (!bgfx::init(init)) return 1;
 
+	if (!bgfx::init(init)) return 1;
 	bgfx::setDebug(BGFX_DEBUG_STATS); // Enable debug.
 
 	// Set view 0 to the same dimensions as the window and to clear the color buffer.
