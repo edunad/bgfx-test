@@ -26,14 +26,17 @@ set(GLFW_INSTALL OFF CACHE INTERNAL "")
 set(BGFX_BUILD_TOOLS ON CACHE INTERNAL "")
 set(BGFX_BUILD_EXAMPLES OFF CACHE INTERNAL "")
 set(BGFX_CUSTOM_TARGETS OFF CACHE INTERNAL "")
+set(BGFX_AMALGAMATED ON CACHE INTERNAL "" FORCE)
 
 if(NOT WIN32)
-	set(EXTRA_LIBS pthread GL X11 wayland-egl)
+	set(EXTRA_LIBS pthread GL X11)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
-	set(GLFW_BUILD_WAYLAND ON CACHE INTERNAL "")
-	set(GLFW_USE_WAYLAND ON CACHE INTERNAL "")
-	set(BGFX_USE_WAYLAND ON CACHE INTERNAL "")
+	if(USE_WAYLAND)
+		LIST(APPEND EXTRA_LIBS wayland-egl)
+		set(GLFW_BUILD_WAYLAND ON CACHE INTERNAL "")
+		set(BGFX_USE_WAYLAND ON CACHE INTERNAL "")
+	endif()
 else()
 	# Ignore warnings about missing pdb
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099")
@@ -43,6 +46,17 @@ endif()
 
 set(CMAKE_SKIP_RPATH TRUE)
 set(CMAKE_SKIP_BUILD_RPATH TRUE)
+
+FetchContent_GetProperties(glfw3)
+if(NOT glfw3_POPULATED)
+	FetchContent_Declare(glfw3
+		GIT_REPOSITORY "https://github.com/glfw/glfw"
+		GIT_TAG "origin/master"
+		GIT_PROGRESS TRUE
+	)
+
+	FetchContent_MakeAvailable(glfw3)
+endif()
 
 FetchContent_GetProperties(bgfx)
 if(NOT bgfx_POPULATED)
@@ -59,9 +73,7 @@ endif()
 include("cmake/utils.cmake")
 
 find_package(fmt REQUIRED)
-find_package(glfw3 REQUIRED)
-
-if(NOT WIN32)
+if(NOT WIN32 AND USE_WAYLAND)
 	find_package(wayland REQUIRED)
 endif()
 
