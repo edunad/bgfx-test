@@ -119,6 +119,7 @@ static void* glfwNativeWindowHandle(GLFWwindow* _window) {
 				win_impl = wl_egl_window_create(surface, width, height);
 				glfwSetWindowUserPointer(_window, (void*)(uintptr_t)win_impl);
 			}
+
 			return (void*)(uintptr_t)win_impl;
 #		else
 			return (void*)(uintptr_t)glfwGetX11Window(_window);
@@ -176,7 +177,7 @@ int main(int argc, char* argv[]) {
 	if (!window) return 1;
 
 	bgfx::Init init;
-	init.type = bgfx::RendererType::Count;
+	init.type = bgfx::RendererType::Vulkan;
 	init.resolution.width = (uint32_t)width;
 	init.resolution.height = (uint32_t)height;
 	init.resolution.reset = BGFX_RESET_VSYNC;
