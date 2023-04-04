@@ -81,6 +81,7 @@ endif()
 include("cmake/utils.cmake")
 
 find_package(fmt REQUIRED)
+find_package(glm REQUIRED)
 if(NOT WIN32 AND USE_WAYLAND)
 	find_package(wayland REQUIRED)
 endif()
@@ -116,6 +117,7 @@ target_link_libraries(${output_target} PUBLIC "${SHADERS_TARGET_NAME}" PRIVATE
 	glfw
 	bgfx
 	bx
+	glm::glm
 	${EXTRA_LIBS}
 )
 
